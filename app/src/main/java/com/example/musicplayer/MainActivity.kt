@@ -8,6 +8,11 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.media.MediaBrowserServiceCompat
+import androidx.mediarouter.media.MediaControlIntent
+import androidx.mediarouter.media.MediaRouteSelector
+import androidx.mediarouter.media.MediaRouter
+import androidx.mediarouter.media.MediaRouterParams
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 
@@ -48,6 +53,20 @@ class MainActivity : AppCompatActivity() {
         seekBar.isClickable = false
         pauseBtn.isEnabled = true
 
+        // Seekbar
+        seekBar.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if(mediaPlayer!=null && fromUser) {
+                    playTime = progress
+                    mediaPlayer.seekTo(playTime)
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Play, Pause, Backward, Forward buttons
         playBtn.setOnClickListener {
             Toast.makeText(this, "Playing Audio", Toast.LENGTH_SHORT).show()
             mediaPlayer.start()
@@ -59,13 +78,13 @@ class MainActivity : AppCompatActivity() {
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(endTime.toLong()) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
             )
             startTime.text = String.format(
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(playTime.toLong()) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
             )
             seekBar.progress = playTime
             handler.postDelayed(updateSongTime, 100)
@@ -102,7 +121,32 @@ class MainActivity : AppCompatActivity() {
                 playBtn.isEnabled = true
             }
         }
+
+        // Notification bar Media Controller
+        val router = MediaRouter.getInstance(this)
+        val routeSelector = MediaRouteSelector.Builder() // Add control categories that this media app is interested in.
+            .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
+            .build()
+        router.routerParams = MediaRouterParams.Builder().setTransferToLocalEnabled(true).build()
+        router.addCallback(routeSelector, MediaRouterCallback(),
+            MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
+
     }
+
+    private class MediaRouterCallback : MediaRouter.Callback() {
+        override fun onRouteSelected(
+            router: MediaRouter,
+            route: MediaRouter.RouteInfo,
+            reason: Int
+        ) {
+            if (reason == MediaRouter.UNSELECT_REASON_ROUTE_CHANGED) {
+                println("Unselected because route changed, continue playback")
+            } else if (reason == MediaRouter.UNSELECT_REASON_STOPPED) {
+                println("Unselected because route was stopped, stop playback")
+            }
+        }
+    }
+
 
     private val updateSongTime = object : Runnable {
         override fun run() {
