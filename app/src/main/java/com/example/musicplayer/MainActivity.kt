@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 
+
 class MainActivity : AppCompatActivity() {
 
     lateinit var forwardBtn: ImageButton
@@ -32,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         title = "KotlinApp"
         backwardBtn = findViewById(R.id.btnBackward)
         forwardBtn = findViewById(R.id.btnForward)
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         seekBar = findViewById(R.id.seekBar)
         seekBar.isClickable = false
         pauseBtn.isEnabled = true
+
         playBtn.setOnClickListener {
             Toast.makeText(this, "Playing Audio", Toast.LENGTH_SHORT).show()
             mediaPlayer.start()
@@ -56,13 +59,13 @@ class MainActivity : AppCompatActivity() {
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(endTime.toLong()) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
             )
             startTime.text = String.format(
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(playTime.toLong()) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
             )
             seekBar.progress = playTime
             handler.postDelayed(updateSongTime, 100)
@@ -79,13 +82,9 @@ class MainActivity : AppCompatActivity() {
             if ((playTime + forwardTime) <= endTime) {
                 playTime += forwardTime
                 mediaPlayer.seekTo(playTime)
-            }
-            else {
-                Toast.makeText(
-                    applicationContext,
-                    "Cannot jump forward 5 seconds",
-                    Toast.LENGTH_SHORT
-                ).show()
+            } else {
+                playTime = endTime
+                mediaPlayer.seekTo(playTime)
             }
             if (!playBtn.isEnabled) {
                 playBtn.isEnabled = true
@@ -95,13 +94,9 @@ class MainActivity : AppCompatActivity() {
             if ((playTime - backwardTime) > 0) {
                 playTime -= backwardTime
                 mediaPlayer.seekTo(playTime)
-            }
-            else {
-                Toast.makeText(
-                    applicationContext,
-                    "Cannot jump backward 5 seconds",
-                    Toast.LENGTH_SHORT
-                ).show()
+            } else {
+                playTime = 0
+                mediaPlayer.seekTo(playTime)
             }
             if (!playBtn.isEnabled) {
                 playBtn.isEnabled = true
@@ -113,9 +108,9 @@ class MainActivity : AppCompatActivity() {
         override fun run() {
             playTime = mediaPlayer.currentPosition
             startTime.text = String.format(
-                "%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(
-                    playTime.toLong()),
-                    TimeUnit.MILLISECONDS.toSeconds(playTime.toLong())
+                "%d min, %d sec",
+                TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()),
+                TimeUnit.MILLISECONDS.toSeconds(playTime.toLong())
                     - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
             )
             seekBar.progress = playTime
