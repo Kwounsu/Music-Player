@@ -10,15 +10,10 @@ import android.os.Handler
 import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.media.MediaBrowserServiceCompat
-import androidx.mediarouter.media.MediaControlIntent
-import androidx.mediarouter.media.MediaRouteSelector
 import androidx.mediarouter.media.MediaRouter
-import androidx.mediarouter.media.MediaRouterParams
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 
@@ -71,20 +66,25 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        // Play, Pause, Backward, Forward buttons
+        // Set song duration
+        songTime.text = String.format(
+            "%d min, %d sec",
+            TimeUnit.MILLISECONDS.toMinutes(mediaPlayer.duration.toLong()),
+            TimeUnit.MILLISECONDS.toSeconds(mediaPlayer.duration.toLong()) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(mediaPlayer.duration.toLong()))
+        )
+
+        // Notification bar Media Controller
+        notification()
+        createNotificationChannel()
+
+        // Buttons: Play, Pause, Backward, Forward
         playBtn.setOnClickListener {
-            Toast.makeText(this, "Playing Audio", Toast.LENGTH_SHORT).show()
             mediaPlayer.start()
             endTime = mediaPlayer.duration
             playTime = mediaPlayer.currentPosition
             seekBar.max = endTime
             onTime = 1
-            songTime.text = String.format(
-                "%d min, %d sec",
-                TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()),
-                TimeUnit.MILLISECONDS.toSeconds(endTime.toLong()) -
-                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
-            )
             startTime.text = String.format(
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()),
@@ -100,7 +100,6 @@ class MainActivity : AppCompatActivity() {
             mediaPlayer.pause()
             pauseBtn.isEnabled = false
             playBtn.isEnabled = true
-            Toast.makeText(applicationContext, "Audio Paused", Toast.LENGTH_SHORT).show()
         }
         btnForward.setOnClickListener {
             if ((playTime + forwardTime) <= endTime) {
@@ -126,21 +125,17 @@ class MainActivity : AppCompatActivity() {
                 playBtn.isEnabled = true
             }
         }
-
-        // Notification bar Media Controller
-        notification()
-        createNotificationChannel()
-
     }
 
     private fun notification() {
         val builder = NotificationCompat.Builder(this, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_icon_foreground)
-            .setContentTitle(songName.text.toString())
-            .setContentText("textContent")
+            .setContentTitle(songName.text)
+            .setContentText(songTime.text)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        with(NotificationManagerCompat.from(this)) {
+        NotificationManagerCompat.from(this).apply {
+            builder.setProgress(mediaPlayer.duration, mediaPlayer.currentPosition, false)
             // notificationId is a unique int for each notification that you must define
             notify(1, builder.build())
         }
@@ -162,21 +157,6 @@ class MainActivity : AppCompatActivity() {
             notificationManager.createNotificationChannel(channel)
         }
     }
-
-    private class MediaRouterCallback : MediaRouter.Callback() {
-        override fun onRouteSelected(
-            router: MediaRouter,
-            route: MediaRouter.RouteInfo,
-            reason: Int
-        ) {
-            if (reason == MediaRouter.UNSELECT_REASON_ROUTE_CHANGED) {
-                println("Unselected because route changed, continue playback")
-            } else if (reason == MediaRouter.UNSELECT_REASON_STOPPED) {
-                println("Unselected because route was stopped, stop playback")
-            }
-        }
-    }
-
 
     private val updateSongTime = object : Runnable {
         override fun run() {
