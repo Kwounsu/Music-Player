@@ -59,13 +59,13 @@ class MainActivity : AppCompatActivity() {
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(endTime.toLong()) -
-                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(endTime.toLong()))
             )
             startTime.text = String.format(
                 "%d min, %d sec",
                 TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()),
                 TimeUnit.MILLISECONDS.toSeconds(playTime.toLong()) -
-                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
             )
             seekBar.progress = playTime
             handler.postDelayed(updateSongTime, 100)
