@@ -108,17 +108,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
     private val updateSongTime = object : Runnable {
         override fun run() {
             playTime = mediaPlayer.currentPosition
             startTime.text = String.format(
-                "%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()),
-
-                        TimeUnit.MILLISECONDS.toSeconds(playTime.toLong())
-                        - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
-
-                )
-
+                "%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes(
+                    playTime.toLong()),
+                    TimeUnit.MILLISECONDS.toSeconds(playTime.toLong())
+                    - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(playTime.toLong()))
+            )
             seekBar.progress = playTime
             handler.postDelayed(this, 100)
         }
