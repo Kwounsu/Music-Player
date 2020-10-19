@@ -13,7 +13,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.mediarouter.media.MediaRouter
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
 
@@ -35,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private var endTime: Int = 0
     private var forwardTime: Int = 5000
     private var backwardTime: Int = 5000
+    private val notificationId = 1
+    private val CHANNEL_ID = "CHANNEL_ID"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,7 +129,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun notification() {
-        val builder = NotificationCompat.Builder(this, "CHANNEL_ID")
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_icon_foreground)
             .setContentTitle(songName.text)
             .setContentText(songTime.text)
@@ -137,7 +138,7 @@ class MainActivity : AppCompatActivity() {
         NotificationManagerCompat.from(this).apply {
             builder.setProgress(mediaPlayer.duration, mediaPlayer.currentPosition, false)
             // notificationId is a unique int for each notification that you must define
-            notify(1, builder.build())
+            notify(notificationId, builder.build())
         }
     }
 
@@ -148,7 +149,7 @@ class MainActivity : AppCompatActivity() {
             val name = getString(R.string.channel_name)
             val descriptionText = getString(R.string.channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("CHANNEL_ID", name, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
             // Register the channel with the system
