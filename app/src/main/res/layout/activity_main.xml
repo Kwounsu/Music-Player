@@ -78,7 +78,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/button_margin"
             android:src="@drawable/ic_pause"
-            android:background="@color/colorAccent" />
+            android:background="@color/colorAccent"
+            android:visibility="gone"/>
         <ImageButton
             android:id="@+id/btnForward"
             android:layout_width="wrap_content"

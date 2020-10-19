@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.view.View
 import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
@@ -96,11 +97,15 @@ class MainActivity : AppCompatActivity() {
             handler.postDelayed(updateSongTime, 100)
             pauseBtn.isEnabled = true
             playBtn.isEnabled = false
+            playBtn.visibility = View.GONE
+            pauseBtn.visibility = View.VISIBLE
         }
         btnPause.setOnClickListener {
             mediaPlayer.pause()
             pauseBtn.isEnabled = false
             playBtn.isEnabled = true
+            pauseBtn.visibility = View.GONE
+            playBtn.visibility = View.VISIBLE
         }
         btnForward.setOnClickListener {
             if ((playTime + forwardTime) <= endTime) {
