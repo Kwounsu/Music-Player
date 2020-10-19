@@ -1,6 +1,10 @@
 package com.example.musicplayer
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.widget.ImageButton
@@ -8,6 +12,8 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.mediarouter.media.MediaControlIntent
 import androidx.mediarouter.media.MediaRouteSelector
@@ -61,7 +67,6 @@ class MainActivity : AppCompatActivity() {
                     mediaPlayer.seekTo(playTime)
                 }
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
@@ -123,14 +128,39 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Notification bar Media Controller
-        val router = MediaRouter.getInstance(this)
-        val routeSelector = MediaRouteSelector.Builder() // Add control categories that this media app is interested in.
-            .addControlCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
-            .build()
-        router.routerParams = MediaRouterParams.Builder().setTransferToLocalEnabled(true).build()
-        router.addCallback(routeSelector, MediaRouterCallback(),
-            MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
+        notification()
+        createNotificationChannel()
 
+    }
+
+    private fun notification() {
+        val builder = NotificationCompat.Builder(this, "CHANNEL_ID")
+            .setSmallIcon(R.drawable.ic_icon_foreground)
+            .setContentTitle(songName.text.toString())
+            .setContentText("textContent")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(1, builder.build())
+        }
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.channel_name)
+            val descriptionText = getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("CHANNEL_ID", name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
     private class MediaRouterCallback : MediaRouter.Callback() {
